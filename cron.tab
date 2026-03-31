@@ -1,0 +1,54 @@
+#
+#  Docker Cron uses $variables from /etc/environment
+#
+
+# Example of job definition:
+# .---------------- minute (0 - 59)
+# |  .------------- hour (0 - 23)
+# |  |  .---------- day of month (1 - 31)
+# |  |  |  .------- month (1 - 12) OR jan,feb,mar,apr ...
+# |  |  |  |  .---- day of week (0 - 6) (Sunday=0 or 7)
+# |  |  |  |  |
+# *  *  *  *  * user-name  command to be executed
+#
+# See /etc/environment for cron variables
+
+# > examples ---------------------------------------------------
+
+#*/5 * * * * /your/command/every-5-minutes
+#0 * * * * /your/command/every-hour
+#0 0 1 * * /your/command/every-first-day-of-every-month
+
+# Run every last day of every month (bash explained: if today + 1 day = 1)
+#0 23 28-31 * * [ $(date -d +1day +%d) -eq 1 ] && path/to/my.sh
+
+# Run every minute with or without flock
+#* * * * * root /usr/bin/flock -n /tmp/your-command-8237fn.lock /usr/bin/php /srv/${DKZ_DOMAIN}/bin/console your:command --verbose --action=... --sqlLimit=1 >> /srv/${DKZ_DOMAIN}/.envs/.logs/crontab/`date +\%Y-\%m-\%d`.log 2>&1
+#* * * * * root                                                 /usr/bin/php /srv/${DKZ_DOMAIN}/bin/console your:command --verbose --action=... --sqlLimit=1 >> /srv/${DKZ_DOMAIN}/.envs/.logs/crontab/`date +\%Y-\%m-\%d`.log 2>&1
+
+# --------------------------------------------------- < examples
+
+
+
+# > CRONS ------------------------------------------------------
+
+# - # - # - # - # - # - # - # - # - # - # - # - # - # - # - # - #
+
+* * * * * root /usr/bin/php -d memory_limit=2G /srv/${DKZ_DOMAIN}/bin/console app:cron --verbose --action=common >> /srv/${DKZ_DOMAIN}/.envs/.logs/crontab/app.cron.common-`date +\%Y-\%m-\%d`.log 2>&1
+# Remove me and add more cron jobs here
+
+# - # - # - # - # - # - # - # - # - # - # - # - # - # - # - # - #
+
+# ------------------------------------------------------ < CRONS
+
+
+
+# > CRONTAB CLEANER --------------------------------------------
+0 0 1 * * root /usr/bin/find /tmp -xdev -mindepth 1 -type f -mtime +180 -delete
+0 0 1 * * root /usr/bin/find /tmp -xdev -mindepth 1 -type d -empty -delete
+# > CRONTAB CHECKER --------------------------------------------
+# Do not delete this line — used by motd to display when cron last ran
+* * * * * root mkdir -p /srv/${DKZ_DOMAIN}/.docker/.logs/crontab/ && echo "$(/usr/bin/date +\%T)" > /srv/${DKZ_DOMAIN}/.docker/.logs/crontab/cron.checker 2>&1
+# -------------------------------------------- < CRONTAB CHECKER
+
+# Bellow this line, we must have empty new line
