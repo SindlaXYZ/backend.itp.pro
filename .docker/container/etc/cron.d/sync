@@ -1,0 +1,11 @@
+#
+# Cron variables are sourced from /etc/environment (populated by boot-init.sh)
+#
+
+# Sync extension-less cron.d files (skip .sh and other scripts) to /etc/cron.d/ every minute
+* * * * * root /bin/bash -c "find /srv/${DKZ_DOMAIN}/.docker/container/etc/cron.d -maxdepth 1 -type f ! -name '*.*' -exec cp -u {} /etc/cron.d/ \; && chmod 0644 /etc/cron.d/*"
+
+# Run sync.sh every 2 minutes
+*/2 * * * * root /bin/bash /srv/${DKZ_DOMAIN}/.docker/container/etc/cron.d/sync.sh
+
+# Below this line, there must be an empty new line

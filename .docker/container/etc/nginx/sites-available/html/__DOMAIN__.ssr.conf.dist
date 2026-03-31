@@ -1,0 +1,104 @@
+#
+# * When nginx find matching location that will process request it ignores any other location that could possibly match request.
+#
+#   +-----------------------------------------------------------------------+
+#   |       .dist file will be used when rebuild docker image               |
+#   |       .conf file is used by docker container, but ignored in git      |
+#   +-----------------------------------------------------------------------+
+#
+# To change this configuration:
+#
+#   1. From HOST machine:
+#      $ nano /etc/nginx/conf.d/__DOMAIN__.conf
+#      $ service nginx reload
+#
+#   2. From DOCKER container:
+#      $ nano /etc/nginx/sites-available/${DKZ_DOMAIN}.conf
+#      $ service nginx reload
+#
+
+#########################################################################################
+###   Domain   ##########################################################################
+
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+
+    server_name __DOMAIN__ __DOMAIN__.localhost;
+
+    #NGINX_BASIC_AUTH_PLACEHOLDER#
+
+    add_header X-Frame-Options SAMEORIGIN;
+    add_header X-Content-Type-Options nosniff;
+    add_header X-XSS-Protection "1; mode=block";
+
+    # allow the server to close connection on non responding client, this will free up memory
+    reset_timedout_connection on;
+
+    # request timed out -- default 60
+    client_body_timeout 10;
+
+    # if client stop responding, free up memory -- default 60
+    send_timeout 2;
+
+    # server will close connection after this time -- default 75
+    keepalive_timeout 30;
+
+    client_max_body_size 100M;
+
+    # Static assets root (dist/__DOMAIN__/browser/)
+    root __WEB_ROOT__;
+
+    error_log  /srv/__DOMAIN__/.docker/.logs/nginx/error.log;
+    #error_log off;
+
+    access_log /srv/__DOMAIN__/.docker/.logs/nginx/access.log;
+    #access_log off;
+
+    error_page 401 403 404 /404.html;
+    error_page 500 502 503 504 /500.html;
+
+    # Static assets served directly by nginx (bypasses Node.js)
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|map|txt|xml)$ {
+        try_files $uri =404;
+        access_log off;
+        expires 7d;
+        add_header Cache-Control "public";
+        add_header X-Frame-Options SAMEORIGIN;
+        add_header X-Content-Type-Options nosniff;
+        add_header X-XSS-Protection "1; mode=block";
+    }
+
+    # Angular SSR: proxy all other requests to Node.js server
+    location / {
+        proxy_pass http://127.0.0.1:__ANGULAR_SSR_PORT__;
+        proxy_http_version 1.1;
+        #proxy_set_header Host $host;
+        proxy_set_header Host $server_name;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        #proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Proto $http_x_forwarded_proto;
+    }
+
+    # Deny access to any .{anything}
+    location ~ /\. {
+        deny all;
+        access_log off;
+        log_not_found off;
+    }
+
+    # Deny access to some files (backup & others)
+    location ~* "\.(old|orig|original|php#|php~|php_bak|save|swo|aspx?|tpl|sh|bash|bak?|cfg|cgi|dll|exe|git|hg|ini|jsp|log|mdb|out|sql|svn|swp|tar|rdf|gz|zip|rar|bz2|7z|pem|asc|conf|dump|psd)$" {
+        deny all;
+        access_log off;
+        log_not_found off;
+    }
+
+    gzip on;
+    gzip_comp_level 6;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+}
+
+#########################################################################################
+#########################################################################################

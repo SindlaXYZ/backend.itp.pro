@@ -1,0 +1,34 @@
+# This file must be on the main (host) server (and NOT inside a Docker container)
+# This file is used by the Docker container to configure Nginx only for the backend project type
+#
+#   +-----------------------------------------------------------------------+
+#   |       .dist file will be used when rebuild docker image               |
+#   |       .conf file is used by docker container, but ignored in git      |
+#   +-----------------------------------------------------------------------+
+#
+
+# This config act like a proxy
+upstream adminer.__DOMAIN__ {
+    server 127.0.0.1:__PORT80__;
+}
+
+server {
+    listen 80;
+    server_name adminer.__DOMAIN__;
+
+    # Variable passed from nginx host
+    #if ($dockerizer_ua_block) {
+    #    # status 444 - A non-standard status code used to instruct nginx to close the connection without sending a response to the client, most commonly used to deny malicious or malformed requests
+    #    return 444;
+    #}
+
+    location / {
+        proxy_pass         http://adminer.__DOMAIN__;
+        proxy_redirect     off;
+        proxy_set_header   Host $host;
+        proxy_set_header   X-Real-IP $remote_addr;
+        proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Host $server_name;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+    }
+}

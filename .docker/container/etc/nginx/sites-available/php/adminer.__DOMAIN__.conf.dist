@@ -1,0 +1,65 @@
+#
+# * When nginx find matching location that will process request it ignores any other location that could possibly match request.
+#
+#   +-----------------------------------------------------------------------+
+#   |       .dist file will be used when rebuild docker image               |
+#   |       .conf file is used by docker container, but ignored in git      |
+#   +-----------------------------------------------------------------------+
+#
+# To change this configuration:
+#
+#   1. From HOST machine:
+#      $ nano /etc/nginx/conf.d/adminer.__DOMAIN__.conf
+#      $ service nginx reload
+#
+#   2. From DOCKER container:
+#      $ nano /etc/nginx/sites-available/adminer.${DKZ_DOMAIN}.conf
+#      $ service nginx reload
+#
+
+#########################################################################################
+###   Adminer   #########################################################################
+
+server {
+    listen 80;
+    listen [::]:80;
+
+    client_max_body_size 100M;
+
+    server_name adminer.__DOMAIN__ adminer-__DOMAIN__ adminer.__DOMAIN__.localhost adminer-__DOMAIN__.localhost;
+
+    auth_basic "The cake is a lie!";
+    auth_basic_user_file /srv/adminer.__DOMAIN__/.htpasswd;
+
+    root /srv/adminer.__DOMAIN__;
+    index index.php;
+
+    #error_log  /srv/__DOMAIN__/.envs/.logs/nginx/adminer_error.log;
+    error_log off;
+
+    #access_log /srv/__DOMAIN__/.envs/.logs/nginx/adminer_access.log;
+    access_log off;
+
+    error_page 401 403 404 /public/404.html;
+    error_page 500 502 503 504 /public/500.html;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+
+    location ~ /\. {
+        deny all;
+    }
+
+    location ~ \.php$ {
+        try_files $uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        fastcgi_pass 127.0.0.1:9000;    # 9000 TCP PHP-FPM default port
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+}
+
+#########################################################################################
+#########################################################################################

@@ -1,0 +1,161 @@
+#
+# * When nginx find matching location that will process request it ignores any other location that could possibly match request.
+#
+#   +-----------------------------------------------------------------------+
+#   |       .dist file will be used when rebuild docker image               |
+#   |       .conf file is used by docker container, but ignored in git      |
+#   +-----------------------------------------------------------------------+
+#
+# To change this configuration:
+#
+#   1. From HOST machine:
+#      $ nano /etc/nginx/conf.d/__DOMAIN__.conf
+#      $ service nginx reload
+#
+#   2. From DOCKER container:
+#      $ nano /etc/nginx/sites-available/${DKZ_DOMAIN}.conf
+#      $ service nginx reload
+#
+
+#########################################################################################
+###   Domain   ##########################################################################
+
+# We will not use this, let the CloudFlare handle the cache
+map $request_uri $expires {
+    default off;
+    ~*\.(jpg|jpeg|png|gif|ico|css|js|pdf|woff|woff2)(\?|$) 7d;
+}
+
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+
+    # On DEV only, the bellow var should be replaced with: listen 443 ssl http2 default_server;
+    #SSL-LISTEN-VAR1#
+
+    # On DEV only, the bellow var should be replaced with: listen [::]:443 ssl http2 default_server;
+    #SSL-LISTEN-VAR2#
+
+    server_name __DOMAIN__ __DOMAIN__.localhost;
+
+    #NGINX_BASIC_AUTH_PLACEHOLDER#
+
+    # On DEV only, the bellow var should be replaced with: include snippets/self-signed.conf;
+    #SSL-INCLUDE-VAR1#
+
+    # On DEV only, the bellow var should be replaced with: include snippets/ssl-params.conf;
+    #SSL-INCLUDE-VAR2#
+
+    add_header X-Frame-Options SAMEORIGIN;
+    add_header X-Content-Type-Options nosniff;
+    add_header X-XSS-Protection "1; mode=block";
+
+    # allow the server to close connection on non responding client, this will free up memory
+    reset_timedout_connection on;
+
+    # request timed out -- default 60
+    client_body_timeout 10;
+
+    # if client stop responding, free up memory -- default 60
+    send_timeout 2;
+
+    # server will close connection after this time -- default 75
+    keepalive_timeout 30;
+
+    client_max_body_size 100M;
+
+    root /srv/__DOMAIN__/public;
+    index index.php;
+
+    error_log  /srv/__DOMAIN__/.docker/.logs/nginx/error.log;
+    #error_log off;
+
+    access_log /srv/__DOMAIN__/.docker/.logs/nginx/access.log;
+    #access_log off;
+
+    error_page 401 403 404 /404.php;
+    error_page 500 502 503 504 /500.php;
+
+    # Let the CloudFlare to manage the expire header
+    #expires $expires;
+
+    # /
+    location / {
+        # try to serve file directly, fallback to index.php
+        try_files $uri /index.php$is_args$args;
+    }
+
+    # Deny access to any .{anything}
+    location ~ /\. {
+        deny all;
+        access_log off;
+        log_not_found off;
+    }
+
+    # Deny access to some files (backup & others)
+    location ~* "\.(old|orig|original|php#|php~|php_bak|save|swo|aspx?|tpl|sh|bash|bak?|cfg|cgi|dll|exe|git|hg|ini|jsp|log|mdb|out|sql|svn|swp|tar|rdf|gz|zip|rar|bz2|7z|pem|asc|conf|dump|psd)$" {
+        deny all;
+        access_log off;
+        log_not_found off;
+    }
+
+    # PHP PM (first, must be enabled in /etc/php/${DKZ_PHP_VERSION_INSTALL}/fpm/pool.d/www.conf)
+    location = /8347724607/status {
+        access_log off;
+        allow 127.0.0.1;
+        allow 81.196.200.30;                # @TODO: update with console logged IP / @BUG: might not work with CloudFlare
+        deny all;                           # @TODO: comment this line when you are sure that the IP is correct
+        add_header X-Robots-Tag noindex;
+        include fastcgi_params;
+
+        fastcgi_param SCRIPT_NAME       '/pm-status'; # MUST match the value of pm.status_path in your /etc/php/${DKZ_PHP_VERSION_INSTALL}/fpm/pool.d/www.conf
+        fastcgi_param SCRIPT_FILENAME   $document_root$fastcgi_script_name;
+        fastcgi_param REQUEST_URI       $request_uri;
+        fastcgi_param QUERY_STRING      $query_string;
+        fastcgi_param REMOTE_ADDR       $remote_addr;
+        fastcgi_param DOCUMENT_ROOT     $realpath_root;
+
+        fastcgi_pass 127.0.0.1:9000;
+    }
+
+    location ~ ^/index\.php(/|$) {
+        if ( $remote_addr = "127.0.0.1" )
+        {
+            access_log off;
+        }
+
+        fastcgi_pass 127.0.0.1:9000;    # 9000 TCP PHP-FPM default port
+        fastcgi_split_path_info ^(.+\.php)(/.*)$;
+        include fastcgi_params;
+        # When you are using symlinks to link the document root to the
+        # current version of your application, you should pass the real
+        # application path instead of the path to the symlink to PHP
+        # FPM.
+        # Otherwise, PHP's OPcache may not properly detect changes to
+        # your PHP files (see https://github.com/zendtech/ZendOptimizerPlus/issues/126
+        # for more information).
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        fastcgi_param DOCUMENT_ROOT $realpath_root;
+        # Prevents URIs that include the front controller. This will 404:
+        # http://domain.tld/public.php/some-path
+        # Remove the internal directive to allow URIs like this
+        internal;
+    }
+
+    location ~ \.php$ {
+        if ( $remote_addr = "127.0.0.1" )
+        {
+            access_log off;
+        }
+
+        try_files $uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        fastcgi_pass 127.0.0.1:9000;    # 9000 TCP PHP-FPM default port
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+}
+
+#########################################################################################
+#########################################################################################
