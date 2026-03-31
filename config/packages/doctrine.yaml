@@ -1,0 +1,85 @@
+doctrine:
+    dbal:
+        default_connection: default
+        connections:
+            default:
+                url: '%env(resolve:DATABASE_URL)%'
+
+                # IMPORTANT: You MUST configure your server version,
+                # either here or in the DATABASE_URL env var (see .env file)
+                server_version: '18'
+
+                charset: UTF-8 # use UTF-8 for PostgreSQL and utf8mb4 for MySQL|MariaDB
+                profiling_collect_backtrace: '%kernel.debug%'
+            audit:
+                url: '%env(resolve:AUDIT_DATABASE_URL)%'
+                server_version: '18'
+                charset: UTF-8 # use UTF-8 for PostgreSQL and utf8mb4 for MySQL|MariaDB
+                profiling_collect_backtrace: '%kernel.debug%'
+                logging: false
+                profiling: false
+    orm:
+        default_entity_manager: default
+        entity_managers:
+            default:
+                connection: default
+                naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
+                identity_generation_preferences:
+                    Doctrine\DBAL\Platforms\PostgreSQLPlatform: identity
+                auto_mapping: true
+                mappings:
+                    App:
+                        type: attribute
+                        is_bundle: false
+                        dir: '%kernel.project_dir%/src/Entity'
+                        prefix: 'App\Entity'
+                        alias: App
+                dql:
+                    string_functions:
+                        unaccent: Sindla\Bundle\AuroraBundle\Doctrine\DQL\PostgreSQL\Unaccent
+                        JSON_TEXT: Sindla\Bundle\AuroraBundle\Doctrine\DQL\PostgreSQL\JsonText
+                        JSON_GET_TEXT: Scienta\DoctrineJsonFunctions\Query\AST\Functions\Postgresql\JsonGetText
+                        JSONB_CONTAINS: Scienta\DoctrineJsonFunctions\Query\AST\Functions\Postgresql\JsonbContains
+                        REGEXP_MATCH: App\Doctrine\DQL\PostgreSQL\RegexpMatch
+                    numeric_functions:
+                        BIT_AND: App\Doctrine\DQL\PostgreSQL\BitAnd
+                filters:
+                    softdeleteable:
+                        class: Gedmo\SoftDeleteable\Filter\SoftDeleteableFilter
+                        enabled: true
+            audit:
+                connection: audit
+                auto_mapping: false
+        controller_resolver:
+            auto_mapping: false
+
+when@test:
+    doctrine:
+        dbal:
+            connections:
+                default:
+                    # "TEST_TOKEN" is typically set by ParaTest
+                    dbname_suffix: '_test%env(default::TEST_TOKEN)%'
+                    #use_savepoints: true # Enable savepoints for nested transactions # Unrecognized option "use_savepoints"
+                audit:
+                    # "TEST_TOKEN" is typically set by ParaTest
+                    dbname_suffix: '_test%env(default::TEST_TOKEN)%'
+                    #use_savepoints: true # Enable savepoints for nested transactions # Unrecognized option "use_savepoints"
+
+when@prod:
+    doctrine:
+        orm:
+            query_cache_driver:
+                type: pool
+                pool: doctrine.system_cache_pool
+            result_cache_driver:
+                type: pool
+                pool: doctrine.result_cache_pool
+
+    framework:
+        cache:
+            pools:
+                doctrine.result_cache_pool:
+                    adapter: cache.app
+                doctrine.system_cache_pool:
+                    adapter: cache.system

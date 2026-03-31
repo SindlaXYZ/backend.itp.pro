@@ -1,0 +1,8 @@
+-   key: OPENA_AI_TRANSLATOR_ASSISTANT_ID
+    type: string
+    encrypted: false
+    description: OpenAI Assistant ID
+-   key: OPENA_AI_TRANSLATOR_THREAD_id
+    type: string
+    encrypted: false
+    description: OpenAI thread

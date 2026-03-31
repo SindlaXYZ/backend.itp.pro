@@ -1,0 +1,22 @@
+includes:
+    - vendor/phpstan/phpstan-doctrine/extension.neon
+    - vendor/phpstan/phpstan-symfony/extension.neon
+    - vendor/phpstan/phpstan-symfony/rules.neon
+
+parameters:
+    level: 1
+    bootstrapFiles:
+        - vendor/autoload.php
+    paths:
+        - bin
+        - config
+        - public
+        - src
+        - tests
+    scanFiles:
+        - vendor/symfony/framework-bundle/Test/KernelTestCase.php
+        - vendor/symfony/http-foundation/Request.php
+        - vendor/symfony/http-foundation/RequestStack.php
+        - vendor/symfony/http-foundation/Response.php
+        - vendor/symfony/finder/Finder.php
+        - vendor/symfony/console/Command/Command.php

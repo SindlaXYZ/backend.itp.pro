@@ -1,0 +1,30 @@
+api_platform:
+    title: backend.itp.pro
+    version: 1.0.0
+    mapping:
+        paths:
+            - '%kernel.project_dir%/src/ApiResource'
+            - '%kernel.project_dir%/src/Controller'
+            - '%kernel.project_dir%/src/Entity'
+    defaults:
+        stateless: true
+        cache_headers:
+            vary: ['Content-Type', 'Authorization', 'Origin']
+        normalization_context:
+            skip_null_values: false
+        pagination_client_items_per_page: false # To allow the client to set the number of items per page
+        pagination_items_per_page: 30           # The default number of items per page
+        pagination_maximum_items_per_page: 100  # The maximum number of items per page
+    collection:
+        pagination:
+            enabled: true
+    formats:
+        jsonld: ['application/ld+json']
+        json: ['application/json']
+        octet_stream: ['application/octet-stream']
+        multipart: ['multipart/form-data']
+    swagger:
+        api_keys:
+            apiKey:
+                name: Authorization
+                type: header

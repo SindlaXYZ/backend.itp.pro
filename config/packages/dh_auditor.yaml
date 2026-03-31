@@ -1,0 +1,43 @@
+# Full configuration reference available at:
+# https://damienharper.github.io/auditor-docs/docs/auditor-bundle/configuration/reference.html
+
+services:
+    app.security.auditor_security_provider:
+        class: App\Security\AuditorSecurityProvider
+        arguments: ['@request_stack', '@security.firewall.map', '@aurora.ip']
+
+dh_auditor:
+    enabled: true
+    timezone: 'UTC'
+
+    # Invokable service (callable) that checks roles
+    role_checker: 'dh_auditor.role_checker'
+
+    # Invokable service (callable) that provides user information
+    user_provider: 'dh_auditor.user_provider'
+
+    # Invokable service (callable) that provides security information (IP, firewall name, etc)
+    security_provider: 'app.security.auditor_security_provider' # 'dh_auditor.security_provider'
+
+    providers:
+        doctrine:
+            table_prefix: null
+            table_suffix: '_audit'
+            entities: []
+
+            # storage entity managers (storage services)
+            storage_services:
+                - '@doctrine.orm.audit_entity_manager'
+
+            # auditing entity managers (auditing services)
+            auditing_services:
+                - '@doctrine.orm.default_entity_manager'
+
+            # Switch to enable/disable the audit viewer
+            viewer: false
+
+            # Invokable service (callable) that maps audit events to storage services
+            storage_mapper: ~
+
+            ignored_columns:
+                - synchronizedAt

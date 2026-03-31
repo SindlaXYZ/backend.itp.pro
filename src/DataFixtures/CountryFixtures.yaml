@@ -1,0 +1,9 @@
+-   name: România
+    slug: romania
+    alpha2Code: RO
+    alpha3Code: ROU
+    alpha3Numeric: "642"
+    timeZones: ["UTC+02:00"]
+    e164CountryCode: 40
+    e164NationalTrunkPrefix: 0
+    topLevelDomain: ".ro"

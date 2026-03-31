@@ -1,0 +1,63 @@
+security:
+    password_hashers:
+        App\Entity\User: 'auto'
+
+    # https://symfony.com/doc/current/security.html#where-do-users-come-from-user-providers
+    providers:
+        app_user_provider:
+            entity:
+                class: App\Entity\User
+                property: username
+        all_users:
+            chain:
+                providers: ['app_user_provider']
+        users_in_memory: { memory: null }
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+        api:
+            pattern: ^/v1
+            stateless: true
+            # configuring the maximum login attempts (per minute)
+            login_throttling:
+                max_attempts: 5 # per minute
+            provider: all_users
+            user_checker: App\Security\UserChecker
+            entry_point: jwt
+            json_login:
+                check_path: /v1/token
+                username_path: username
+                password_path: password
+                success_handler: lexik_jwt_authentication.handler.authentication_success
+                failure_handler: lexik_jwt_authentication.handler.authentication_failure
+            jwt: ~
+            # refresh_jwt: # Unrecognized option "refresh_jwt"
+            # check_path: /v1/token/refresh # or, you may use the `api_refresh_token` route name
+            logout:
+                path: app_logout
+            # https://symfony.com/doc/current/security/impersonating_user.html
+            switch_user: true
+
+    # Easy way to control access for large sections of your site
+    # Note: Only the *first* access control that matches will be used
+    access_control:
+        - { path: ^/v1/(token|token/refresh), roles: PUBLIC_ACCESS }
+        - { path: ^/v1/users, roles: PUBLIC_ACCESS , methods: [POST] }
+        - { path: ^/v1/users, roles: IS_AUTHENTICATED_FULLY } # matches /v1/users/* except for anything matching the above rule
+
+    # Must set all roles for /v1/roles API endpoint
+    role_hierarchy:
+        PUBLIC_ACCESS: ~
+        ROLE_USER: ~
+        ROLE_STATION_INSPECTOR: ROLE_USER
+        ROLE_STATION_OWNER: ROLE_STATION_INSPECTOR
+        ROLE_ADMIN: ROLE_STATION_OWNER
+        ROLE_SUPER_ADMIN: [ROLE_ADMIN, ROLE_ALLOWED_TO_SWITCH]
+
+when@test:
+    security:
+        firewalls:
+            api:
+                login_throttling: false
+
