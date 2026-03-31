@@ -1,0 +1,143 @@
+#################################################
+### OS ##########################################
+
+*/Thumbs.db
+Thumbs.db
+.DS_Store
+/~tmp
+
+#################################################
+### IDE #########################################
+
+/.idea
+
+#################################################
+### Dockraft ####################################
+
+/.docker/container/etc/nginx/sites-available/html/*.conf
+/.docker/container/etc/nginx/sites-available/php/*.conf
+/.docker/stubs/
+/.docker/.logs
+/.docker/.env.local
+
+#################################################
+### Other #######################################
+
+# Node artifact files
+node_modules/
+dist/
+!/public/static/**/dist
+
+# Compiled Java class files
+*.class
+
+# Compiled Python bytecode
+*.py[cod]
+
+# Log files
+*.log
+
+# Package files
+*.jar
+
+# Maven
+target/
+
+# JetBrains IDE
+.idea/
+
+# Unit test reports
+TEST*.xml
+
+# Applications
+*.app
+*.exe
+*.war
+
+#################################################
+### DEV && PROD #################################
+
+.envs/.photos
+.envs/.photos/*
+
+.envs/.db
+.envs/.db/*
+
+/data/*
+!/data/git/
+#################################################
+### Symfony #####################################
+
+# Parameters
+/app/config/parameters.yml
+/app/config/parameters.ini
+
+# Preload
+/config/preload.php
+/src/.preload.php
+
+# Builds
+/build/
+
+# VAR Cache
+!/var/cache
+/var/cache/*
+!var/cache/.gitkeep
+
+# VAR Logs
+!/var/logs
+/var/logs/*
+!var/logs/.gitkeep
+
+# VAR Sessions
+!/var/sessions
+/var/sessions/*
+!var/sessions/.gitkeep
+
+# VAR tmp
+/var/tmp/*
+
+# vendor
+/vendor/
+vendor.zip
+vendor.7z
+
+# Managed by Composer
+/app/bootstrap.php.cache
+/var/bootstrap.php.cache
+/bin/*
+!bin/console
+!bin/phpunit
+!bin/symfony_requirements
+
+# PHPUnit
+/phpunit-coverage
+.phpunit.result.cache
+
+# Backup entities generated with doctrine:generate:entities command
+**/Entity/*~
+
+# Translation
+/app/Resources/Sindla/*
+/app/Resources/Sindla/
+
+# Static files
+/public/bundles/
+/public/uploads/
+/public/static/compiled/*
+!/public/static/compiled/.gitkeep
+!/public/static/compiled/.gitignore
+/public/static/img/favicon/browserconfig.xml
+/public/static/img/favicon/manifest.json
+
+.env.local
+.env.*.local
+
+###> lexik/jwt-authentication-bundle ###
+/config/jwt/*.pem
+###< lexik/jwt-authentication-bundle ###
+
+###> phpunit/phpunit ###
+/phpunit.xml
+/.phpunit.cache/
+###< phpunit/phpunit ###
