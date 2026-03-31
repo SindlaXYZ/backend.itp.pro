@@ -1,0 +1,23 @@
+{
+    "permissions": {
+        "allow": [
+            "Bash(*)",
+            "WebFetch(*)"
+        ],
+        "deny": [
+            "Read(.git/**)",
+            "Read(.gitattributes)",
+            "Read(.gitignore)",
+            "Read(.gitmodules)",
+            "Write(.git/**)",
+            "Write(.gitattributes)",
+            "Write(.gitignore)",
+            "Write(.gitmodules)"
+        ],
+        "defaultMode": "acceptEdits"
+    },
+    "enabledPlugins": {
+        "php-lsp@claude-plugins-official": true,
+        "context7@upstash": true
+    }
+}
