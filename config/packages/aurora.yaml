@@ -1,0 +1,70 @@
+parameters:
+    aurora.bundle: 'App'
+    aurora.root: '%kernel.project_dir%'
+    aurora.tmp: '%kernel.project_dir%/var/tmp'
+    aurora.resources: '%kernel.project_dir%/var/resources'
+    aurora.static: '%kernel.project_dir%/public/static'
+    aurora.locales: [ 'en', 'ro' ]
+    aurora.locale: 'ro'
+    # maxmind.com license key
+    aurora.maxmind.license_key: '%env(default::MAXMIND_LICENSE_KEY)%'
+    # Minify output
+    aurora.minify.output: false
+    aurora.minify.output.ignore.extensions:   ['.pdf', '.csv', '.jpg', '.png', '.gif', '.doc', '.docx', '.xls', '.xlsm', '.xlsx', '.xml', '.zip']
+    aurora.minify.output.ignore.content.type: ['text/plain', 'text/csv', 'application/octet-stream', 'image/jpeg', 'image/png', 'image/gif', 'application/pdf', 'application/xml', 'application/zip']
+    # https://developers.google.com/web/fundamentals/web-app-manifest
+    #aurora.pwa.version_append:        "!php/eval `date('Y-m-d H')`"
+    aurora.pwa.version_append: "!php/eval `App\Utils::pwaVersionAppend()`"
+    aurora.pwa.automatically_prompt: false
+    aurora.pwa.app_name: ''
+    aurora.pwa.app_short_name: ''
+    aurora.pwa.app_description: ''
+    aurora.pwa.start_url: '/?pwa'
+    aurora.pwa.display: 'fullscreen'   # fullscreen | standalone | minimal-ui
+    aurora.pwa.icons: '%kernel.project_dir%/public/static/img/favicon'
+    aurora.pwa.theme_color: '#2C3E50' # Sets the color of the tool bar, and may be reflected in the app's preview in task switchers
+    aurora.pwa.background_color: '#2C3E50' # Should be the same color as the load page, to provide a smooth transition from the splash screen to your app
+    aurora.pwa.offline: '/aurora/pwa-offline'
+    aurora.pwa.precache:
+        - '/'
+    aurora.pwa.prevent_cache:
+        - '/ajax-requests'
+        - '/q'
+        - '/xhr'
+        - '/login'
+        - '/logout'
+        - '/admin'
+        - '.*\.mp4' # mp4 files are large, some browsers will not be able to fully cache it, meaning the video will not be displayed
+        - '.*\/match-this\/.*'
+    aurora.pwa.external_cache:
+        - 'fonts.gstatic.com'
+        - 'fonts.googleapis.com'
+    aurora.dns_prefetch:
+        - 'www.google.com'
+        - 'fonts.googleapis.com'
+        - 'fonts.gstatic.com'
+        - 'googletagmanager.com'
+        - 'www.googletagmanager.com'
+        - 'www.google-analytics.com'
+        - 'google-analytics.com'
+        - 'googleads.g.doubleclick.net'
+        - 'www.googletagservices.com'
+        - 'adservice.google.com'
+        - 'adservice.google.ro'
+        - 'www.facebook.com'
+        - 'gstatic.com'
+        - 'www.gstatic.com'
+        - 'google.com'
+        - 'google.ro'
+        - 'connect.facebook.net'
+        - 'youtube.com'
+        - 'addthis.com'
+        - 'gemius.pl'
+        - 'pubmatic.com'
+        - 'innovid.com'
+        - 'everesttech.net'
+        - 'quantserve.com'
+        - 'rubiconproject.com'
+        - 'facebook.com'
+        - 'agkn.com'
+        - 'casalemedia.com'
