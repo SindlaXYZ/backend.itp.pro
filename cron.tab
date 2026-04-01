@@ -13,6 +13,9 @@
 #
 # See /etc/environment for cron variables
 
+# [DOES NOT WORK] The CRON_TZ specifies the time zone specific for the cron table
+# CRON_TZ="Europe/Bucharest"
+
 # > examples ---------------------------------------------------
 
 #*/5 * * * * /your/command/every-5-minutes
@@ -21,6 +24,9 @@
 
 # Run every last day of every month (bash explained: if today + 1 day = 1)
 #0 23 28-31 * * [ $(date -d +1day +%d) -eq 1 ] && path/to/my.sh
+
+# Reboot every night at 02:00 UTC (04:00 Eastern European Time (EET) & 05:00 Eastern European Summer Time (EEST))
+#0 2 * * * /sbin/shutdown -r now
 
 # Run every minute with or without flock
 #* * * * * root /usr/bin/flock -n /tmp/your-command-8237fn.lock /usr/bin/php /srv/${DKZ_DOMAIN}/bin/console your:command --verbose --action=... --sqlLimit=1 >> /srv/${DKZ_DOMAIN}/.envs/.logs/crontab/`date +\%Y-\%m-\%d`.log 2>&1

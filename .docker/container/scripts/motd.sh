@@ -389,7 +389,11 @@ if [[ -f "$_cron_checker" ]]; then
         _cron_info="${CRED}${_diff_hours} ${_sh} and ${_diff_minutes} ${_sm} ago${CDEF}"
     else
         _sm=$([ $_diff_minutes -eq 1 ] && echo minute || echo minutes)
-        _cron_info="${CYELLOW}${_diff_minutes} ${_sm} ago${CDEF}"
+        if [[ $_diff_minutes -ge 2 ]]; then
+            _cron_info="${CRED}${_diff_minutes} ${_sm} ago${CDEF}"
+        else
+            _cron_info="${CYELLOW}${_diff_minutes} ${_sm} ago${CDEF}"
+        fi
     fi
 else
     _cron_info="${CRED}checker not found${CDEF}"
