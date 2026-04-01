@@ -8,7 +8,7 @@ FROM ${DKZ_DIST}
 SHELL ["/bin/bash", "-c"]
 
 LABEL maintainer="Sindla"
-LABEL version="2026.04.01.0830"
+LABEL version="2026.04.01.0837"
 LABEL description="Dockraft"
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
