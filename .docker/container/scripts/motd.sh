@@ -341,6 +341,35 @@ _svc_row() {
     printf '%b\n' "$info"
 }
 
+_container_uptime() {
+    local half_width=$(($(tput cols 2>/dev/null || echo 80) / 2))
+    local uptime_output
+    local uptime_days
+    local uptime_part
+    local uptime_hours
+    local uptime_minutes
+    uptime_output=$(uptime)
+    if echo "$uptime_output" | grep -q 'up [0-9]\+ days'; then
+        uptime_days=$(echo "$uptime_output" | awk -F' up ' '{print $2}' | awk '{print $1}')
+        uptime_part=$(echo "$uptime_output" | awk -F'up [0-9]* days, ' '{print $2}' | awk -F',' '{print $1}' | xargs)
+    else
+        uptime_days=0
+        uptime_part=$(echo "$uptime_output" | awk -F'up ' '{print $2}' | awk -F',' '{print $1}' | xargs)
+    fi
+
+    uptime_hours=$(echo "$uptime_part" | cut -d':' -f1)
+    uptime_minutes=$(echo "$uptime_part" | cut -d':' -f2)
+
+    if [ "$uptime_days" -eq 0 ]; then
+        local UPTIME_DAYS_HOURS_MINUTES=$(echo -e "${CRED}${uptime_days} days, ${uptime_hours} hours, ${uptime_minutes} minutes${CDEF}")
+    elif [ "$uptime_days" -eq 1 ]; then
+        local UPTIME_DAYS_HOURS_MINUTES=$(echo -e "${CYELLOW}${uptime_days} days, ${uptime_hours} hours, ${uptime_minutes} minutes${CDEF}")
+    else
+        local UPTIME_DAYS_HOURS_MINUTES=$(echo -e "${uptime_days} days, ${uptime_hours} hours, ${uptime_minutes} minutes")
+    fi
+    echo -e "$UPTIME_DAYS_HOURS_MINUTES"
+}
+
 # =============================================================================
 # Display
 # =============================================================================
@@ -355,6 +384,7 @@ echo -e " - Disk (/srv)................: ${DISK_SRV} / ${DISK_AVAILABLE}"
 echo -e " - CPU load (1/5/15 min)......: ${LOAD1}, ${LOAD5}, ${LOAD15}"
 echo -e " - Memory used................: ${MEMORY_USED} / ${MEMORY_TOTAL}"
 echo -e " - Swap in use................: ${SWAP_USED}"
+echo -e " - Uptime.....................: $(_container_uptime)"
 separator
 echo -e " - Domain.....................: $(echo -e "${DOMAIN_DISPLAY}")"
 echo -e " - DKZ environment............: ${DKZ_ENV}"
