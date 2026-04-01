@@ -12,6 +12,7 @@
 # (volume-mounted in DEV; git-cloned in PROD). NOT baked into /etc/dockraft/scripts/.
 # -----------------------------------------------------------------------------
 
+[[ -f /etc/environment ]] && source /etc/environment
 source /srv/${DKZ_DOMAIN}/.docker/container/scripts/lib.sh
 
 # =============================================================================
@@ -260,8 +261,19 @@ LOAD1=$(awk '{print $1}' /proc/loadavg)
 LOAD5=$(awk '{print $2}' /proc/loadavg)
 LOAD15=$(awk '{print $3}' /proc/loadavg)
 
-DISK_SRV=$(df -h /srv 2>/dev/null | awk 'NR==2{print $3"/"$2" ("$5" used)"}')
-[[ -z "$DISK_SRV" ]] && DISK_SRV="N/A"
+if [[ -n "${DKZ_SRVSPACE:-}" ]]; then
+    DISK_SRV="${DKZ_SRVSPACE}"
+else
+    DISK_SRV=$(du -sh /srv 2>/dev/null | cut -f1)
+    [[ -z "$DISK_SRV" ]] && DISK_SRV="N/A"
+fi
+
+if [[ -n "${DKZ_ROOTSPACE:-}" ]]; then
+    DISK_AVAILABLE="${DKZ_ROOTSPACE}"
+else
+    DISK_AVAILABLE=$(df -h / 2>/dev/null | awk 'NR==2{print $4}')
+    [[ -z "$DISK_AVAILABLE" ]] && DISK_AVAILABLE="N/A"
+fi
 
 DATE_LOCAL=$(date +"%Y-%m-%d %H:%M:%S [%Z %z]")
 
@@ -339,7 +351,7 @@ echo -e " - Distribution...............: ${DISTRIBUTION}"
 echo -e " - Linux kernel...............: ${LINUX_KERNEL}"
 echo -e " - Hostname...................: ${HOSTNAME}"
 echo -e " - Public IP..................: ${PUBLIC_IP}"
-echo -e " - Disk (/srv)................: ${DISK_SRV}"
+echo -e " - Disk (/srv)................: ${DISK_SRV} / ${DISK_AVAILABLE}"
 echo -e " - CPU load (1/5/15 min)......: ${LOAD1}, ${LOAD5}, ${LOAD15}"
 echo -e " - Memory used................: ${MEMORY_USED} / ${MEMORY_TOTAL}"
 echo -e " - Swap in use................: ${SWAP_USED}"

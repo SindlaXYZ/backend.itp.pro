@@ -44,7 +44,7 @@ if [[ "$DKZ_ENV" == "PROD" ]]; then
 fi
 
 # =============================================================================
-# Every 5 minutes: update DKZ_SRVSPACE and DKZ_TMPSPACE in /etc/environment
+# Every 5 minutes: update DKZ_SRVSPACE, DKZ_TMPSPACE and DKZ_ROOTSPACE in /etc/environment
 # =============================================================================
 
 if [[ $(( $(date +"%M") % 5 )) -eq 0 ]]; then
@@ -64,5 +64,12 @@ if [[ $(( $(date +"%M") % 5 )) -eq 0 ]]; then
         echo "DKZ_TMPSPACE=\"${DKZ_TMPSPACE}\"" >> /etc/environment
     fi
 
-    log "DKZ_SRVSPACE=${DKZ_SRVSPACE} DKZ_TMPSPACE=${DKZ_TMPSPACE}"
+    DKZ_ROOTSPACE=$(df -h / 2>/dev/null | awk 'NR==2{print $4}')
+    if grep -q "^DKZ_ROOTSPACE=" /etc/environment 2>/dev/null; then
+        sed -i "s|^DKZ_ROOTSPACE=.*|DKZ_ROOTSPACE=\"${DKZ_ROOTSPACE}\"|" /etc/environment
+    else
+        echo "DKZ_ROOTSPACE=\"${DKZ_ROOTSPACE}\"" >> /etc/environment
+    fi
+
+    log "DKZ_SRVSPACE=${DKZ_SRVSPACE} DKZ_TMPSPACE=${DKZ_TMPSPACE} DKZ_ROOTSPACE=${DKZ_ROOTSPACE}"
 fi
