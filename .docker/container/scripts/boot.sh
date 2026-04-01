@@ -24,20 +24,42 @@ fi
 
 log "### Nginx"
 
-# Configure Basic Access Authentication if credentials are provided
+# Configure Basic Access Authentication for main domain and secondary domains (DKZ_DOMAINS)
+_domain_confs=("/etc/nginx/sites-available/${DKZ_DOMAIN}.conf")
+if [[ -n "${DKZ_DOMAINS:-}" ]]; then
+    IFS=',' read -ra _secondary_domains <<< "${DKZ_DOMAINS}"
+    for _secondary in "${_secondary_domains[@]}"; do
+        _secondary="${_secondary// /}"
+        [[ -n "$_secondary" && -f "/etc/nginx/sites-available/${_secondary}.conf" ]] && _domain_confs+=("/etc/nginx/sites-available/${_secondary}.conf")
+    done
+fi
 if [[ -n "${DKZ_NGINX_BASIC_ACCESS_AUTHENTICATION_USERNAME:-}" && -n "${DKZ_NGINX_BASIC_ACCESS_AUTHENTICATION_PASSWORD:-}" ]]; then
     log "Nginx Basic Access Authentication: enabling for user '${DKZ_NGINX_BASIC_ACCESS_AUTHENTICATION_USERNAME}'"
     echo "${DKZ_NGINX_BASIC_ACCESS_AUTHENTICATION_USERNAME}:$(openssl passwd -apr1 "${DKZ_NGINX_BASIC_ACCESS_AUTHENTICATION_PASSWORD}")" > "/etc/nginx/.htpasswd-${DKZ_DOMAIN}"
     chmod 644 "/etc/nginx/.htpasswd-${DKZ_DOMAIN}"
-    for _conf in /etc/nginx/sites-available/*.conf; do
+    for _conf in "${_domain_confs[@]}"; do
         grep -q "#NGINX_BASIC_AUTH_PLACEHOLDER#" "$_conf" || continue
         sed -i "s|    #NGINX_BASIC_AUTH_PLACEHOLDER#|    auth_basic \"Restricted\";\n    auth_basic_user_file /etc/nginx/.htpasswd-${DKZ_DOMAIN};|" "$_conf"
     done
 else
     log "Nginx Basic Access Authentication: disabled (no credentials set)"
-    for _conf in /etc/nginx/sites-available/*.conf; do
+    for _conf in "${_domain_confs[@]}"; do
         sed -i "/    #NGINX_BASIC_AUTH_PLACEHOLDER#/d" "$_conf"
     done
+fi
+
+if [[ "$DKZ_ENV" == "PROD" ]]; then
+    # Configure Adminer Basic Access Authentication (scoped to adminer.${DKZ_DOMAIN} only)
+    _adminer_conf="/etc/nginx/sites-available/adminer.${DKZ_DOMAIN}.conf"
+    if [[ -n "${DKZ_ADMINER_PASSWORD:-}" && -f "$_adminer_conf" ]]; then
+        log "Nginx Adminer Basic Access Authentication: enabling"
+        echo "adminer:$(openssl passwd -apr1 "${DKZ_ADMINER_PASSWORD}")" > "/etc/nginx/.htpasswd-adminer.${DKZ_DOMAIN}"
+        chmod 644 "/etc/nginx/.htpasswd-adminer.${DKZ_DOMAIN}"
+        sed -i "s|    #NGINX_ADMINER_AUTH_PLACEHOLDER#|    auth_basic \"Adminer\";\n    auth_basic_user_file /etc/nginx/.htpasswd-adminer.${DKZ_DOMAIN};|" "$_adminer_conf"
+    elif [[ -f "$_adminer_conf" ]]; then
+        log "Nginx Adminer Basic Access Authentication: disabled (DKZ_ADMINER_PASSWORD not set)"
+        sed -i "/    #NGINX_ADMINER_AUTH_PLACEHOLDER#/d" "$_adminer_conf"
+    fi
 fi
 
 if [[ -f /etc/nginx/sites-available/.gitignore ]]; then

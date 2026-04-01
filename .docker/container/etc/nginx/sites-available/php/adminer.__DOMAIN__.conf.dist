@@ -28,8 +28,7 @@ server {
 
     server_name adminer.__DOMAIN__ adminer-__DOMAIN__ adminer.__DOMAIN__.localhost adminer-__DOMAIN__.localhost;
 
-    auth_basic "The cake is a lie!";
-    auth_basic_user_file /srv/adminer.__DOMAIN__/.htpasswd;
+    #NGINX_ADMINER_AUTH_PLACEHOLDER#
 
     root /srv/adminer.__DOMAIN__;
     index index.php;
