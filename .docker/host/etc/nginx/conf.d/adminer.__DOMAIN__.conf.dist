@@ -14,7 +14,7 @@ upstream adminer.__DOMAIN__ {
 
 server {
     listen 80;
-    server_name adminer.__DOMAIN__;
+    server_name adminer.__DOMAIN__ adminer-__DOMAIN__;
 
     # Variable passed from nginx host
     #if ($dockerizer_ua_block) {
