@@ -48,6 +48,30 @@ else
     done
 fi
 
+if [[ "${DKZ_PHP_VERSION_INSTALL:-0}" != "0" ]]; then
+    # If the adminer file doest not exists, or is empty, or is older than 480 minutes (8 hours)
+    if [[ ! -f /srv/adminer.${DKZ_DOMAIN}/index.php ]] || [[ ! -s /srv/adminer.${DKZ_DOMAIN}/index.php ]] || [[ $(find "/srv/adminer.${DKZ_DOMAIN}/index.php" -mmin +480 -print) ]]; then
+        mkdir -p /srv/adminer."${DKZ_DOMAIN}"/
+        wget --no-check-certificate http://www.adminer.org/latest-en.php -O /srv/adminer."${DKZ_DOMAIN}"/index.php
+        wget --no-check-certificate https://raw.githubusercontent.com/vrana/adminer/HEAD/designs/pepa-linha/adminer.css -O /srv/adminer."${DKZ_DOMAIN}"/adminer.css
+        echo '#table thead td, #table thead th, table th:not([title=""]) {position: sticky !important; top:0 !important;} #tables { top: 150px !important; }' >>/srv/adminer."${DKZ_DOMAIN}"/adminer.css
+        echo '#menu #tables li a.select { float: right; }' >>/srv/adminer."${DKZ_DOMAIN}"/adminer.css
+        echo '.jush { width: 75vw !important; height: 65vh !important; }' >>/srv/adminer."${DKZ_DOMAIN}"/adminer.css
+        echo 'p#dbs {display: flex;	label[title="Database"], label:not([title]) { margin-right: 0 !important; width: 50%; font-size: 0; select { font-size: 0.8rem; width: 100%;} } }' >>/srv/adminer."${DKZ_DOMAIN}"/adminer.css
+        if [[ "$DKZ_ENV" == "PROD" ]]; then
+            echo '#menu { .version::after { content: " [ PROD ]"; color: red; font-weight: bold; text-transform: uppercase; position: absolute; padding-top: 6px; right: 15px;} }' >>/srv/adminer."${DKZ_DOMAIN}"/adminer.css
+        fi
+        # sed -i -e '1 s/ = first match only
+        sed -i \
+          -e '1 s/<?php.*/<?php \/* DOCKER UPDATED *\//g' \
+          -e 's/Adminer;$ia=/Adminer; ini_set("memory_limit", "-1"); set_time_limit(0); $ia=/g' \
+          -e 's/placeholder="[^"][^"]*"/placeholder="\/var\/run\/postgresql"/g' \
+          -e 's/=$_SESSION\["messages"\]/=@$_SESSION\["messages"\]/g' \
+          -e 's/error_reporting([^)]*);/error_reporting(6133);/g' \
+          /srv/adminer."${DKZ_DOMAIN}"/index.php
+    fi
+fi
+
 if [[ "$DKZ_ENV" == "PROD" ]]; then
     # Configure Adminer Basic Access Authentication (scoped to adminer.${DKZ_DOMAIN} only)
     _adminer_conf="/etc/nginx/sites-available/adminer.${DKZ_DOMAIN}.conf"
