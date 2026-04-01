@@ -8,7 +8,7 @@ FROM ${DKZ_DIST}
 SHELL ["/bin/bash", "-c"]
 
 LABEL maintainer="Sindla"
-LABEL version="2026.04.01.0617"
+LABEL version="2026.04.01.0623"
 LABEL description="Dockraft"
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -108,9 +108,20 @@ RUN apt-get -y update && \
         git \
         nano \
         nginx \
+        htop \
+        wget \
         p7zip-full \
-        supervisor && \
+        supervisor \
+        rsync \
+        tree \
+        jq && \
     rm -rf /var/lib/apt/lists/*
+
+# ----------------------------------------------------------------------------------------------------------------------
+# yq (v4.52.5)
+# ----------------------------------------------------------------------------------------------------------------------
+
+RUN VERSION=v4.52.5 BINARY=yq_linux_amd64 && wget https://github.com/mikefarah/yq/releases/download/${VERSION}/${BINARY}.tar.gz -O - | tar xz && mv ${BINARY} /usr/bin/yq
 
 # ----------------------------------------------------------------------------------------------------------------------
 # /root/sindla/ — runtime directory for the boot-init timestamp file.
