@@ -522,7 +522,7 @@ if [[ "${DKZ_PHP_VERSION_INSTALL:-0}" != "0" ]]; then
         if [[ "$DKZ_ENV" == "DEV" ]]; then
             echo -e "    tests..........: run PHPUnit tests"
         else
-            echo -e "    deploy....: deploy script (git pull + composer + migrations)"
+            echo -e "    deploy.........: deploy script (git pull + composer + migrations)"
         fi
     fi
 fi
@@ -533,7 +533,7 @@ if [[ "${DKZ_NODEJS_ANGULAR_VERSION_INSTALL:-0}" != "0" ]]; then
         echo -e "    ng serve --port ${DKZ_NODEJS_ANGULAR_PORT} --host 0.0.0.0"
         echo -e "    npm run build"
     else
-        echo -e "    deploy....: deploy script (git pull + npm build + restart)"
+        echo -e "    deploy.........: deploy script (git pull + npm build + restart)"
         echo -e "    supervisorctl restart angular   (restart Node.js server)"
     fi
 fi
